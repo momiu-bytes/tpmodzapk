@@ -1,4 +1,4 @@
-name: Dong Goi APK Tu AI Studio
+name: Build APK Android Studio
 on:
   workflow_dispatch:
 
@@ -9,45 +9,22 @@ jobs:
       - name: Lay code ve
         uses: actions/checkout@v4
 
-      - name: Cai dat Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       - name: Cai dat Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Cai dat Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Cai dat cac thu vien vaf Dong goi APK
+      - name: Cap quyen va Build APK
         run: |
-          # Neu project co package.json thi cai dependencies
-          if [ -f "package.json" ]; then
-            npm install
-          fi
+          # Cap quyen chay cho gradle neu co san
+          chmod +x gradlew || true
           
-          # Su dung Cordova de build nhanh sang Android APK
-          npm install -g cordova
-          cordova create build_tmp com.tpmodz.app "AI_Studio_App"
-          
-          # Copy toan bo code giao dien vao thu muc web cua app
-          cp -r app/* build_tmp/www/ || cp -r assets/* build_tmp/www/ || true
-          
-          cd build_tmp
-          cordova platform add android
-          cordova build android --debug
-          
-          # Chuyen file APK ra ngoai de ti nua tai len
-          mkdir -p ../output
-          cp platforms/android/app/build/outputs/apk/debug/*.apk ../output/ || true
+          # Chay lenh build xuyen qua cac thu muc, chap ca kts
+          ./gradlew assembleDebug || gradle assembleDebug || (sudo apt-get update && sudo apt-get install -y gradle && gradle assembleDebug)
 
       - name: Day file APK len cho ban tai
         uses: actions/upload-artifact@v4
         with:
-          name: ai-studio-app-apk
-          path: output/*.apk
-          
+          name: app-debug-apk
+          path: "**/build/outputs/apk/debug/*.apk"
