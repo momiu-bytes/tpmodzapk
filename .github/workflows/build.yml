@@ -1,0 +1,28 @@
+name: Build APK Tu Dong
+on:
+  workflow_dispatch: # Giúp bạn có nút bấm chạy bằng tay
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lay code ve
+        uses: actions/checkout@v4
+
+      - name: Cai dat Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Cap quyen va Build APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Day file APK len cho ban tai
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          
