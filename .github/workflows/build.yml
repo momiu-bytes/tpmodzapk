@@ -1,6 +1,6 @@
 name: Build APK Tu Dong
 on:
-  workflow_dispatch: # Giúp bạn có nút bấm chạy bằng tay
+  workflow_dispatch:
 
 jobs:
   build:
@@ -9,20 +9,20 @@ jobs:
       - name: Lay code ve
         uses: actions/checkout@v4
 
-      - name: Cai dat Java 17
+      - name: Cai dat Java 17 va Gradle
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Cap quyen va Build APK
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug
+      - name: Cai dat Gradle he thong
+        run: sudo apt-get update && sudo apt-get install -y gradle
+
+      - name: Build APK bang Gradle he thong
+        run: gradle assembleDebug
 
       - name: Day file APK len cho ban tai
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
-          
+          path: "**/build/outputs/apk/debug/*.apk"
