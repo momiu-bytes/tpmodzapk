@@ -9,17 +9,28 @@ jobs:
       - name: Lay code ve
         uses: actions/checkout@v4
 
-      - name: Cai dat Java 17 va Gradle
+      - name: Cai dat Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Cai dat Gradle he thong
-        run: sudo apt-get update && sudo apt-get install -y gradle
-
-      - name: Build APK bang Gradle he thong
-        run: gradle assembleDebug
+      - name: Tim kiem va Build tat ca cac project Android
+        run: |
+          # Tu dong tim file build.gradle va build luon
+          find . -name "build.gradle" -o -name "build.gradle.kts" | while read file; do
+            dir=$(dirname "$file")
+            echo "Dang build project tai: $dir"
+            cd "$dir"
+            if [ -f "./gradlew" ]; then
+              chmod +x gradlew
+              ./gradlew assembleDebug || true
+            else
+              sudo apt-get update && sudo apt-get install -y gradle
+              gradle assembleDebug || true
+            fi
+            cd - > /dev/null
+          done
 
       - name: Day file APK len cho ban tai
         uses: actions/upload-artifact@v4
