@@ -1,4 +1,4 @@
-name: Build APK Tu Dong
+name: Dong Goi APK Tu AI Studio
 on:
   workflow_dispatch:
 
@@ -9,31 +9,45 @@ jobs:
       - name: Lay code ve
         uses: actions/checkout@v4
 
+      - name: Cai dat Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Cai dat Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Tim kiem va Build tat ca cac project Android
+      - name: Cai dat Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Cai dat cac thu vien vaf Dong goi APK
         run: |
-          # Tu dong tim file build.gradle va build luon
-          find . -name "build.gradle" -o -name "build.gradle.kts" | while read file; do
-            dir=$(dirname "$file")
-            echo "Dang build project tai: $dir"
-            cd "$dir"
-            if [ -f "./gradlew" ]; then
-              chmod +x gradlew
-              ./gradlew assembleDebug || true
-            else
-              sudo apt-get update && sudo apt-get install -y gradle
-              gradle assembleDebug || true
-            fi
-            cd - > /dev/null
-          done
+          # Neu project co package.json thi cai dependencies
+          if [ -f "package.json" ]; then
+            npm install
+          fi
+          
+          # Su dung Cordova de build nhanh sang Android APK
+          npm install -g cordova
+          cordova create build_tmp com.tpmodz.app "AI_Studio_App"
+          
+          # Copy toan bo code giao dien vao thu muc web cua app
+          cp -r app/* build_tmp/www/ || cp -r assets/* build_tmp/www/ || true
+          
+          cd build_tmp
+          cordova platform add android
+          cordova build android --debug
+          
+          # Chuyen file APK ra ngoai de ti nua tai len
+          mkdir -p ../output
+          cp platforms/android/app/build/outputs/apk/debug/*.apk ../output/ || true
 
       - name: Day file APK len cho ban tai
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
-          path: "**/build/outputs/apk/debug/*.apk"
+          name: ai-studio-app-apk
+          path: output/*.apk
+          
